@@ -7,9 +7,15 @@ const MAX_FILE_SIZE     = 25 * 1024 * 1024;
 const WHISPER_ENDPOINT  = "https://api.openai.com/v1/audio/transcriptions";
 const ACCEPT_ATTR       = ".mp3,.mp4,.mpeg,.mpga,.m4a,.wav,.webm";
 const MAX_AGE_MS        = 24 * 60 * 60 * 1000;
-const DEFAULT_PASSWORD  = "luluwhisper";
-const DEFAULT_USERNAMES = ["humberto", "malu"];
-const USD_TO_BRL        = 5.85;
+const USD_TO_BRL = 5.85;
+
+// Cadastro de usuários permitidos — senha inicial por conta
+// Usuários já existentes no localStorage NÃO são afetados (a senha deles permanece)
+const DEFAULT_USERS = {
+  humberto: { defaultPwd: "luluwhisper" },
+  malu:     { defaultPwd: "luluwhisper" },
+  carol:    { defaultPwd: "carolwhisper" },
+};
 
 const STORAGE = { users: "mw-users", session: "mw-session" };
 
@@ -48,12 +54,15 @@ async function sha256(text) {
 }
 
 async function initUsers() {
-  if (localStorage.getItem(STORAGE.users)) return;
-  const hash = await sha256(DEFAULT_PASSWORD);
-  const users = {};
-  for (const name of DEFAULT_USERNAMES)
-    users[name] = { pwdHash: hash, apiKey: "", model: "whisper-1" };
-  localStorage.setItem(STORAGE.users, JSON.stringify(users));
+  const users = getUsers();
+  let changed = false;
+  for (const [name, cfg] of Object.entries(DEFAULT_USERS)) {
+    if (!users[name]) {
+      users[name] = { pwdHash: await sha256(cfg.defaultPwd), apiKey: "", model: "whisper-1", history: [] };
+      changed = true;
+    }
+  }
+  if (changed) saveUsers(users);
 }
 
 function getUsers() { return JSON.parse(localStorage.getItem(STORAGE.users) || "{}"); }
@@ -469,7 +478,7 @@ function LoadingOverlay({ label="Transcrevendo…" }) {
 // TELA DE LOGIN
 // ══════════════════════════════════════════════
 function LoginScreen({ onLogin }) {
-  const [username, setUsername] = useState(DEFAULT_USERNAMES[0]);
+  const [username, setUsername] = useState(Object.keys(DEFAULT_USERS)[0]);
   const [pwd,      setPwd]      = useState("");
   const [showPwd,  setShowPwd]  = useState(false);
   const [error,    setError]    = useState("");
@@ -521,7 +530,7 @@ function LoginScreen({ onLogin }) {
                 onFocus={e => e.target.style.borderColor="#E8836B"}
                 onBlur={e  => e.target.style.borderColor="#E5E7EB"}
               >
-                {DEFAULT_USERNAMES.map(n => (
+                {Object.keys(DEFAULT_USERS).map(n => (
                   <option key={n} value={n}>{n}</option>
                 ))}
               </select>
