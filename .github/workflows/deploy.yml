@@ -1,0 +1,36 @@
+name: Build & Deploy — Firebase Hosting
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # permite disparar manualmente pelo GitHub
+
+jobs:
+  build_and_deploy:
+    name: Build e Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout do código
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: 📦 Instalar dependências
+        run: npm ci
+
+      - name: 🔨 Build da aplicação
+        run: npm run build
+
+      - name: 🚀 Deploy no Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_MALU_WHISPER }}"
+          channelId: live
+          projectId: malu-whisper
