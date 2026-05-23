@@ -585,6 +585,28 @@ function LoginScreen({ onLogin }) {
 // ══════════════════════════════════════════════
 // ABA: CONFIGURAÇÕES
 // ══════════════════════════════════════════════
+
+// Definido FORA do SettingsTab para evitar re-criação a cada render (que causava perda de foco)
+function PwdInput({ id, label, value, onChange, placeholder }) {
+  return (
+    <div style={{ marginBottom:"12px" }}>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <input id={id} type="password" value={value}
+        onChange={e => onChange(e.target.value)} placeholder={placeholder}
+        autoComplete="off"
+        style={{
+          width:"100%", padding:"10px 14px", borderRadius:"10px",
+          border:"1.5px solid #E5E7EB", fontSize:"14px",
+          fontFamily:"inherit", background:"#FAFAFA", color:"#2D2D2D",
+          transition:"border-color 0.2s",
+        }}
+        onFocus={e => e.target.style.borderColor="#E8836B"}
+        onBlur={e  => e.target.style.borderColor="#E5E7EB"}
+      />
+    </div>
+  );
+}
+
 function SettingsTab({ username, apiKey, setApiKey, model, setModel }) {
   const [showKey,    setShowKey]    = useState(false);
   const [curPwd,     setCurPwd]     = useState("");
@@ -619,24 +641,6 @@ function SettingsTab({ username, apiKey, setApiKey, model, setModel }) {
       setPwdError(err.message);
     } finally { setPwdLoading(false); }
   };
-
-  const PwdInput = ({ id, label, value, onChange, placeholder }) => (
-    <div style={{ marginBottom:"12px" }}>
-      <FieldLabel htmlFor={id}>{label}</FieldLabel>
-      <input id={id} type="password" value={value}
-        onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        autoComplete="off"
-        style={{
-          width:"100%", padding:"10px 14px", borderRadius:"10px",
-          border:"1.5px solid #E5E7EB", fontSize:"14px",
-          fontFamily:"inherit", background:"#FAFAFA", color:"#2D2D2D",
-          transition:"border-color 0.2s",
-        }}
-        onFocus={e => e.target.style.borderColor="#E8836B"}
-        onBlur={e  => e.target.style.borderColor="#E5E7EB"}
-      />
-    </div>
-  );
 
   return (
     <main style={{ maxWidth:"600px", margin:"0 auto", padding:"8px 16px 64px" }}>
